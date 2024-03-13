@@ -2,7 +2,7 @@
 
 Welcome to GeniusAI, an advanced AI tool packed with powerful features for a seamless user experience.
 
-![Screenshot](https://github.com/shubham242/genius-ai/assets/preview.png)
+![Screenshot](https://github.com/shubham242/genius-ai/blob/main/assets/preview.png)
 
 ## Features
 
