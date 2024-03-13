@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/user-avatar";
+import { useProModal } from "@/hooks/use-pro-modal";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
@@ -18,24 +19,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { formSchema } from "./constants";
+import toast from "react-hot-toast";
 
 const ConversationPage = () => {
+  const proModal = useProModal();
   const router = useRouter();
-  const [messages, setMessages] = useState<OpenAI.Chat.Completions.ChatCompletionMessageParam[]>([
-    {
-      role: "user",
-      content: "what is radius of sun",
-    },
-    {
-      role: "assistant",
-      content: "The radius of the Sun is approximately 696,340 kilometers (432,450 miles).",
-    },
-  ]);
+  const [messages, setMessages] = useState<OpenAI.Chat.Completions.ChatCompletionMessageParam[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      promt: "",
+      prompt: "",
     },
   });
 
@@ -45,7 +39,7 @@ const ConversationPage = () => {
     try {
       const userMessage = {
         role: "user",
-        content: values.promt,
+        content: values.prompt,
       };
 
       const newMessages = [...messages, userMessage];
@@ -56,12 +50,16 @@ const ConversationPage = () => {
 
       setMessages((current) => [...current, userMessage, response.data]);
       form.reset();
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }
+      else {
+        toast.error("Something went wrong");
+      }
     } finally {
       router.refresh();
     }
-    console.log(messages);
   };
 
   return (
@@ -81,7 +79,7 @@ const ConversationPage = () => {
               className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2"
             >
               <FormField
-                name="promt"
+                name="prompt"
                 render={({ field }) => (
                   <FormItem className="col-span-12 lg:col-span-10">
                     <FormControl className="m-0 p-0">
